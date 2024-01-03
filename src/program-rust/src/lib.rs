@@ -30,7 +30,6 @@ fn process_instruction(
     let sender_account = next_account_info(account_info_iter)?;
     let receiver1_account = next_account_info(account_info_iter)?;
     let receiver2_account = next_account_info(account_info_iter)?;
-    let system_program_account = next_account_info(account_info_iter)?;
 
     if !sender_account.is_signer {
         msg!("Error: Sender account is not a signer");
@@ -56,7 +55,6 @@ fn process_instruction(
         &[
             sender_account.clone(),
             receiver1_account.clone(),
-            system_program_account.clone(),
         ],
     )?;
 
@@ -69,7 +67,6 @@ fn process_instruction(
        &[
             sender_account.clone(),
             receiver2_account.clone(),
-            system_program_account.clone(),
        ],
     )?;
 
