@@ -4,12 +4,14 @@ use solana_program::{
     entrypoint::ProgramResult,
     msg,
     pubkey::Pubkey,
+    declare_id,
     program_error::ProgramError,
     program_pack::Pack,
     system_instruction,
     program::invoke,
 };
 
+declare_id!("FCSKqqjPcNRQE4QRVLrJASmhg95QMPKmD1BpcaWJvg1G");
 entrypoint!(process_instruction);
 
 fn process_instruction(
