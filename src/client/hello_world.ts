@@ -200,15 +200,25 @@ export async function checkProgram(): Promise<void> {
  */
 export async function sayHello(): Promise<void> {
   console.log('Saying hello to', greetedPubkey.toBase58());
+  const receiver1 = new PublicKey('NbJvJCS7y7LnKtiJPTzfbRiuQnkxNoWpcJae99FegZW');
+  const receiver2 = new PublicKey('NbJvJCS7y7LnKtiJPTzfbRiuQnkxNoWpcJae99FegZW');
+  const buffer = Buffer.alloc(8); // 8 bytes for a 64-bit number
+  const value = BigInt(300000000);
+  buffer.writeBigUInt64LE(value,0);
   const instruction = new TransactionInstruction({
-    keys: [{pubkey: greetedPubkey, isSigner: false, isWritable: true}],
-    programId,
-    data: Buffer.alloc(0), // All instructions are hellos
+    keys: [
+      { pubkey: payer.publicKey, isSigner: true, isWritable: true },
+      { pubkey: receiver1, isSigner: false, isWritable: true },
+      { pubkey: receiver2, isSigner: false, isWritable : true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    programId: programId,
+    data: buffer, // All instructions are hellos
   });
   await sendAndConfirmTransaction(
-    connection,
-    new Transaction().add(instruction),
-    [payer],
+      connection,
+      new Transaction().add(instruction),
+      [payer],
   );
 }
 
