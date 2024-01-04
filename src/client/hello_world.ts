@@ -14,8 +14,9 @@ import {
 import fs from 'mz/fs';
 import path from 'path';
 import * as borsh from 'borsh';
-
 import {getPayer, getRpcUrl, createKeypairFromFile} from './utils';
+
+import bs58 from 'bs58';
 
 /**
  * Connection to the network
@@ -168,6 +169,8 @@ export async function checkProgram(): Promise<void> {
     programId,
   );
 
+  console.log("greetedPubkey:", greetedPubkey.toBase58())
+
   // Check if the greeting account has already been created
   const greetedAccount = await connection.getAccountInfo(greetedPubkey);
   if (greetedAccount === null) {
@@ -195,9 +198,6 @@ export async function checkProgram(): Promise<void> {
   }
 }
 
-/**
- * Say hello
- */
 export async function sayHello(): Promise<void> {
   console.log('Saying hello to', greetedPubkey.toBase58());
   const receiver1 = new PublicKey('NbJvJCS7y7LnKtiJPTzfbRiuQnkxNoWpcJae99FegZW');
@@ -219,6 +219,77 @@ export async function sayHello(): Promise<void> {
       connection,
       new Transaction().add(instruction),
       [payer],
+  );
+}
+
+export async function sendTransaction(): Promise<void> {
+  console.log("sendTransaction")
+  const addr = new PublicKey("FCSKqqjPcNRQE4QRVLrJASmhg95QMPKmD1BpcaWJvg1G");
+
+  await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(SystemProgram.transfer({
+        fromPubkey: payer.publicKey,
+        toPubkey: addr,
+        lamports: 1000 * LAMPORTS_PER_SOL,
+      })),
+      [payer],
+  );
+}
+/**
+ * Say hello
+ */
+export async function deposit(): Promise<void> {
+
+
+  const feePayer = Keypair.fromSecretKey(
+      bs58.decode("2UyuFwGhV9Ts7YX5gxb6N1fppFEpGNY5gwf9szYspJLuu9VbCLhHfTo7wDdY1pFWAoUzHkyURzrE7KE5NDeQkT2S")
+  );
+  const lamports = await connection.getBalance(feePayer.publicKey);
+  console.log("deposit: ", feePayer.publicKey.toBase58(), lamports / 10 ** 9)
+
+  // const receiver1 = new PublicKey('B5nYWgm4SUDbLe8SvDVKEcv7VNyXVcX1z4ELUdLeNuTv');
+  const instruction = new TransactionInstruction({
+    keys: [
+      { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
+      { pubkey: payer.publicKey, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    programId: programId,
+    data: Buffer.from([0]), // All instructions are hellos
+  });
+  await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(instruction),
+      [feePayer],
+  );
+}
+
+export async function withdraw(): Promise<void> {
+  const programAccounts = await connection.getProgramAccounts(programId);
+  const contractPublicKeys = programAccounts.map((account) => account.account.owner.toBase58());
+  console.log(contractPublicKeys)
+
+  const feePayer = Keypair.fromSecretKey(
+      bs58.decode("2UyuFwGhV9Ts7YX5gxb6N1fppFEpGNY5gwf9szYspJLuu9VbCLhHfTo7wDdY1pFWAoUzHkyURzrE7KE5NDeQkT2S")
+  );
+  const lamports = await connection.getBalance(feePayer.publicKey);
+  console.log("withdraw: ", feePayer.publicKey.toBase58(), lamports / 10 ** 9)
+
+  const instruction = new TransactionInstruction({
+    keys: [
+      { pubkey: payer.publicKey, isSigner: false, isWritable: true },
+      { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    programId: programId,
+    data: Buffer.from([1]), // All instructions are hellos
+  });
+
+  await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(instruction),
+      [feePayer],
   );
 }
 

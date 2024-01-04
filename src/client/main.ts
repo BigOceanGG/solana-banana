@@ -6,8 +6,10 @@ import {
   establishConnection,
   establishPayer,
   checkProgram,
-  sayHello,
+  deposit,
+  withdraw,
   reportGreetings,
+  sendTransaction,
 } from './hello_world';
 
 async function main() {
@@ -23,7 +25,11 @@ async function main() {
   await checkProgram();
 
   // Say hello to an account
-  await sayHello();
+  // await sendTransaction();
+
+  // await deposit();
+  //
+  await withdraw()
 
   // Find out how many times that account has been greeted
   await reportGreetings();
