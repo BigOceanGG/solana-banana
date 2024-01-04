@@ -11,6 +11,7 @@ use solana_program::{
     program::invoke,
 };
 
+declare_id!("FCSKqqjPcNRQE4QRVLrJASmhg95QMPKmD1BpcaWJvg1G");
 entrypoint!(process_instruction);
 
 fn process_instruction(
@@ -20,59 +21,55 @@ fn process_instruction(
 ) -> ProgramResult {
     msg!("Solana split transfer contract called.");
 
-    if instruction_data.is_empty() {
+    if instruction_data.len() < 8 {
         return Err(ProgramError::InvalidInstructionData);
     }
+    let mut amount_bytes = [0u8; 8];
+    amount_bytes.copy_from_slice(&instruction_data[0..8]);
+    let amount = u64::from_le_bytes(amount_bytes);
 
-    match instruction_data[0] {
-        0 => deposit(accounts),
-        1 => withdraw(accounts),
-        _ => Err(ProgramError::InvalidInstructionData),
-    }
-}
-
-
-fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
-    let depositor_account = next_account_info(account_info_iter)?;
-    let contract_account = next_account_info(account_info_iter)?;
+    let sender_account = next_account_info(account_info_iter)?;
+    let receiver1_account = next_account_info(account_info_iter)?;
+    let receiver2_account = next_account_info(account_info_iter)?;
 
-    // 确定存款金额
-    let amount = 200000000;
+    if !sender_account.is_signer {
+        msg!("Error: Sender account is not a signer");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
 
-    // 创建存款指令
-    let deposit_instruction = system_instruction::transfer(
-        &depositor_account.key,
-        &contract_account.key,
-        amount,
-    );
+    if !receiver1_account.is_writable || !receiver2_account.is_writable{
+        msg!("Error: Receiver account is not writable");
+        return Err(ProgramError::InvalidAccountData);
+    }
+
+    if sender_account.lamports() < amount {
+        msg!("Insufficient balance.");
+        return Err(ProgramError::InsufficientFunds);
+    }
 
     invoke(
-        &deposit_instruction,
-        &[depositor_account.clone(), contract_account.clone()],
+        &system_instruction::transfer(
+                 &sender_account.key,
+                 &receiver1_account.key,
+                 amount/20,
+             ),
+        &[
+            sender_account.clone(),
+            receiver1_account.clone(),
+        ],
     )?;
 
-    Ok(())
-}
-
-fn withdraw(accounts: &[AccountInfo]) -> ProgramResult {
-    let account_info_iter = &mut accounts.iter();
-    let contract_account = next_account_info(account_info_iter)?;
-    let withdrawer_account = next_account_info(account_info_iter)?;
-
-    // 确定取款金额
-    let amount = 100000000;
-
-    // 创建取款指令
-    let withdraw_instruction = system_instruction::transfer(
-        &contract_account.key,
-        &withdrawer_account.key,
-        amount,
-    );
-
     invoke(
-        &withdraw_instruction,
-        &[contract_account.clone(), withdrawer_account.clone()],
+       &system_instruction::transfer(
+               &sender_account.key,
+               &receiver2_account.key,
+               19*amount/20,
+            ),
+       &[
+            sender_account.clone(),
+            receiver2_account.clone(),
+       ],
     )?;
 
     Ok(())
