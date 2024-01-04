@@ -63,17 +63,12 @@ fn withdraw(accounts: &[AccountInfo]) -> ProgramResult {
     // 确定取款金额
     let amount = 100000000;
 
-    // 创建取款指令
-    let withdraw_instruction = system_instruction::transfer(
-        &contract_account.key,
-        &withdrawer_account.key,
-        amount,
-    );
-
-    invoke(
-        &withdraw_instruction,
-        &[contract_account.clone(), withdrawer_account.clone()],
-    )?;
+    if contract_account.lamports() < amount {
+        msg!("Insufficient balance.");
+        return Err(ProgramError::InsufficientFunds);
+    }
+    **contract_account.lamports.borrow_mut() -= amount;
+    **withdrawer_account.lamports.borrow_mut() += amount;
 
     Ok(())
 }

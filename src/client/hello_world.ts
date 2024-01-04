@@ -264,11 +264,35 @@ export async function deposit(): Promise<void> {
       [feePayer],
   );
 }
+export async function createAccount(): Promise<void> {
+  const space = 0;
+
+  // Seed the created account with lamports for rent exemption
+  const rentExemptionAmount =
+      await connection.getMinimumBalanceForRentExemption(space);
+
+  const newAccountPubkey = Keypair.generate();
+  const createAccountParams = {
+    fromPubkey: payer.publicKey,
+    newAccountPubkey: newAccountPubkey.publicKey,
+    lamports: rentExemptionAmount,
+    space,
+    programId: programId,
+  };
+
+  const createAccountTransaction = new Transaction().add(
+      SystemProgram.createAccount(createAccountParams)
+  );
+
+  console.log("new :", newAccountPubkey.publicKey.toBase58())
+
+  await sendAndConfirmTransaction(connection, createAccountTransaction, [
+    payer,
+    newAccountPubkey,
+  ]);
+}
 
 export async function withdraw(): Promise<void> {
-  const programAccounts = await connection.getProgramAccounts(programId);
-  const contractPublicKeys = programAccounts.map((account) => account.account.owner.toBase58());
-  console.log(contractPublicKeys)
 
   const feePayer = Keypair.fromSecretKey(
       bs58.decode("2UyuFwGhV9Ts7YX5gxb6N1fppFEpGNY5gwf9szYspJLuu9VbCLhHfTo7wDdY1pFWAoUzHkyURzrE7KE5NDeQkT2S")
