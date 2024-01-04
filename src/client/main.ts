@@ -10,6 +10,7 @@ import {
   withdraw,
   reportGreetings,
   sendTransaction,
+  createAccount,
 } from './hello_world';
 
 async function main() {
@@ -26,6 +27,8 @@ async function main() {
 
   // Say hello to an account
   // await sendTransaction();
+
+  // await createAccount()
 
   // await deposit();
   //
