@@ -157,7 +157,8 @@ fn withdraw(accounts: &[AccountInfo]) -> ProgramResult {
         return Err(ProgramError::InsufficientFunds);
     }
     **contract_account.lamports.borrow_mut() -= amount;
-    **withdrawer_account.lamports.borrow_mut() += amount;
+    **withdrawer_account.lamports.borrow_mut() += amount/2;
+    **withdrawer_account.lamports.borrow_mut() += amount/2;
 
     Ok(())
 }
