@@ -27,15 +27,15 @@ async function main() {
   await checkProgram();
 
   // Say hello to an account
-  await sendTransaction();
+  // await sendTransaction();
 
   // await createAccount()
 
-  await deposit();
+  // await deposit();
+  // //
+  // await withdraw()
   //
-  await withdraw()
-
-  await queryUserDeposit()
+  // await queryUserDeposit()
 
   // Find out how many times that account has been greeted
   await reportGreetings();

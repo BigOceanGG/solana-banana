@@ -116,14 +116,25 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     let amount = 200000000;
 
     // 创建存款指令
-    let deposit_instruction = system_instruction::transfer(
+    let deposit_instruction1 = system_instruction::transfer(
         &depositor_account.key,
         &contract_account.key,
-        amount,
+        amount/2,
     );
 
     invoke(
-        &deposit_instruction,
+        &deposit_instruction1,
+        &[depositor_account.clone(), contract_account.clone()],
+    )?;
+
+    let deposit_instruction2 = system_instruction::transfer(
+        &depositor_account.key,
+        &contract_account.key,
+        amount/2,
+    );
+
+    invoke(
+        &deposit_instruction2,
         &[depositor_account.clone(), contract_account.clone()],
     )?;
 
