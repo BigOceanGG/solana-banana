@@ -11,6 +11,7 @@ import {
   reportGreetings,
   sendTransaction,
   createAccount,
+  queryUserDeposit,
 } from './hello_world';
 
 async function main() {
@@ -32,7 +33,9 @@ async function main() {
 
   // await deposit();
   //
-  await withdraw()
+  // await withdraw()
+
+  await queryUserDeposit()
 
   // Find out how many times that account has been greeted
   await reportGreetings();

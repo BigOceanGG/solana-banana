@@ -264,6 +264,15 @@ export async function deposit(): Promise<void> {
       [feePayer],
   );
 }
+
+export async function queryUserDeposit() {
+  const accountInfo = await connection.getAccountInfo(payer.publicKey);
+  if (accountInfo === null) {
+    throw new Error('Error fetching account info');
+  }
+
+  console.log('accountInfo :', accountInfo.data.length);
+}
 export async function createAccount(): Promise<void> {
   const space = 0;
 

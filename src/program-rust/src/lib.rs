@@ -10,7 +10,73 @@ use solana_program::{
     system_instruction,
     program::invoke,
 };
+use std::collections::HashMap;
 
+#[derive(Debug)]
+pub struct SolContract {
+    // 用户地址和余额的映射关系
+    balances: HashMap<Pubkey, u64>,
+}
+
+impl SolContract {
+    pub fn new() -> Self {
+        Self {
+            balances: HashMap::new(),
+        }
+    }
+
+    pub fn deposit(&mut self, account: &Pubkey, amount: u64) -> ProgramResult {
+        let caller_pubkey = account;
+
+        if let Some(balance) = self.balances.get_mut(caller_pubkey) {
+            // 用户已存在，增加余额
+            *balance += amount;
+        } else {
+            // 用户不存在，添加新用户及余额
+            self.balances.insert(*caller_pubkey, amount);
+        }
+
+        msg!(
+            "Deposited {} sol to contract for {}",
+            amount,
+            caller_pubkey
+        );
+        Ok(())
+    }
+
+    pub fn withdraw(
+        &mut self,
+        account: &Pubkey,
+        amount: u64,
+    ) -> ProgramResult {
+        let caller_pubkey = account;
+
+        if let Some(balance) = self.balances.get_mut(caller_pubkey) {
+            if *balance < amount {
+                return Err(ProgramError::InsufficientFunds);
+            }
+            *balance -= amount;
+            Ok(())
+        } else {
+            Err(ProgramError::UninitializedAccount)
+        }
+    }
+
+    pub fn get_balance(&self, account: &Pubkey) -> ProgramResult {
+        let caller_pubkey = account;
+
+        if let Some(balance) = self.balances.get(caller_pubkey) {
+            msg!(
+                "Balance of {} is {} sol",
+                caller_pubkey,
+                balance
+            );
+            Ok(())
+        } else {
+            Err(ProgramError::UninitializedAccount)
+        }
+    }
+}
 entrypoint!(process_instruction);
 
 fn process_instruction(
@@ -27,8 +93,17 @@ fn process_instruction(
     match instruction_data[0] {
         0 => deposit(accounts),
         1 => withdraw(accounts),
+        2 => getUserBalance(accounts),
         _ => Err(ProgramError::InvalidInstructionData),
     }
+}
+
+fn getUserBalance(accounts: &[AccountInfo]) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let account = next_account_info(account_info_iter)?;
+    let mut contract = SolContract::new();
+    contract.get_balance(account.key);
+    Ok(())
 }
 
 
@@ -51,6 +126,9 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
         &deposit_instruction,
         &[depositor_account.clone(), contract_account.clone()],
     )?;
+
+    let mut contract = SolContract::new();
+    contract.deposit(depositor_account.key, amount);
 
     Ok(())
 }
