@@ -252,7 +252,7 @@ export async function deposit(): Promise<void> {
   const instruction = new TransactionInstruction({
     keys: [
       { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: false, isWritable: true },
+      { pubkey: greetedPubkey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     programId: programId,
@@ -311,7 +311,7 @@ export async function withdraw(): Promise<void> {
 
   const instruction = new TransactionInstruction({
     keys: [
-      { pubkey: payer.publicKey, isSigner: false, isWritable: true },
+      { pubkey: greetedPubkey, isSigner: false, isWritable: true },
       { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
