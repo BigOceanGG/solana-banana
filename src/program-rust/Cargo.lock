@@ -3018,11 +3018,17 @@ dependencies = [
 name = "solana-bpf-helloworld"
 version = "0.0.1"
 dependencies = [
+ "arrayref",
  "borsh",
  "borsh-derive 0.10.0",
+ "num-derive",
+ "num-integer",
+ "num-traits",
+ "num_enum",
  "solana-program",
  "solana-program-test",
  "solana-sdk",
+ "thiserror",
 ]
 
 [[package]]
