@@ -27,11 +27,11 @@ async function main() {
   await checkProgram();
 
   // Say hello to an account
-  // await sendTransaction();
+  await sendTransaction();
   //
 
   //
-  let pubKey = "EHET2ziinNPQRgZe2kCgqkBQgH5x8kamirdWpcxFFbwe"
+  let pubKey = ""
   if(!pubKey) {
     await createAccount()
   }
