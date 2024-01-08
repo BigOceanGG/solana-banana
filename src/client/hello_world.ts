@@ -242,6 +242,12 @@ export async function sendTransaction(): Promise<void> {
       [payer],
   );
 }
+
+function toUInt64LEBytes(value) {
+  const buffer = Buffer.allocUnsafe(8);
+  buffer.writeBigUInt64LE(BigInt(value), 0);
+  return buffer;
+}
 /**
  * Say hello
  */
@@ -265,7 +271,10 @@ export async function deposit(pubKey: string): Promise<void> {
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     programId: programId,
-    data: Buffer.from([0]), // All instructions are hellos
+    data: Buffer.concat([
+      Buffer.from([0]),
+      Buffer.from(toUInt64LEBytes(200000000)),
+    ]), // All instructions are hellos
   });
   await sendAndConfirmTransaction(
       connection,
@@ -322,7 +331,10 @@ export async function withdraw(pubKey: string): Promise<void> {
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     programId: programId,
-    data: Buffer.from([1]), // All instructions are hellos
+    data: Buffer.concat([
+      Buffer.from([1]),
+      Buffer.from(toUInt64LEBytes(100000000)),
+    ]), // All instructions are hellos
   });
 
   await sendAndConfirmTransaction(

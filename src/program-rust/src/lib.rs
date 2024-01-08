@@ -30,20 +30,22 @@ fn process_instruction(
         return Err(ProgramError::InvalidInstructionData);
     }
 
+    let mut amount_bytes = [0u8; 8];
+    amount_bytes.copy_from_slice(&instruction_data[1..9]);
+    let amount = u64::from_le_bytes(amount_bytes);
+
     match instruction_data[0] {
-        0 => deposit(accounts),
-        1 => withdraw(accounts),
+        0 => deposit(accounts, amount),
+        1 => withdraw(accounts, amount),
         _ => Err(ProgramError::InvalidInstructionData),
     }
 }
 
-fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
+fn deposit(accounts: &[AccountInfo], amount: u64) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let depositor_account = next_account_info(account_info_iter)?;
     let contract_account = next_account_info(account_info_iter)?;
 
-
-    let amount = 200000000;
     let deposit_instruction1 = system_instruction::transfer(
         &depositor_account.key,
         &contract_account.key,
@@ -77,13 +79,10 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     Ok(())
 }
 
-fn withdraw(accounts: &[AccountInfo]) -> ProgramResult {
+fn withdraw(accounts: &[AccountInfo], amount: u64) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let contract_account = next_account_info(account_info_iter)?;
     let withdrawer_account = next_account_info(account_info_iter)?;
-
-    // 确定取款金额
-    let amount = 100000000;
 
     if contract_account.lamports() < amount {
         msg!("Insufficient balance. {}", contract_account.lamports());
