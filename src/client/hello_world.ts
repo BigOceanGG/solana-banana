@@ -15,6 +15,9 @@ import fs from 'mz/fs';
 import path from 'path';
 import * as borsh from 'borsh';
 import {getPayer, getRpcUrl, createKeypairFromFile} from './utils';
+import { serialize, deserialize, deserializeUnchecked } from "borsh";
+import { Buffer } from "buffer";
+import { Ok, Err, Result } from 'ts-results';
 
 import bs58 from 'bs58';
 
@@ -37,6 +40,9 @@ let programId: PublicKey;
  * The public key of the account we are saying hello to
  */
 let greetedPubkey: PublicKey;
+
+
+let contractPubkey: PublicKey;
 
 /**
  * Path to program files
@@ -252,7 +258,7 @@ export async function deposit(): Promise<void> {
   const instruction = new TransactionInstruction({
     keys: [
       { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
-      { pubkey: greetedPubkey, isSigner: false, isWritable: true },
+      { pubkey: contractPubkey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     programId: programId,
@@ -265,16 +271,9 @@ export async function deposit(): Promise<void> {
   );
 }
 
-export async function queryUserDeposit() {
-  const accountInfo = await connection.getAccountInfo(payer.publicKey);
-  if (accountInfo === null) {
-    throw new Error('Error fetching account info');
-  }
 
-  console.log('accountInfo :', accountInfo.data.length);
-}
 export async function createAccount(): Promise<void> {
-  const space = 0;
+  const space = 205;
 
   // Seed the created account with lamports for rent exemption
   const rentExemptionAmount =
@@ -293,7 +292,7 @@ export async function createAccount(): Promise<void> {
       SystemProgram.createAccount(createAccountParams)
   );
 
-  console.log("new :", newAccountPubkey.publicKey.toBase58())
+  contractPubkey = newAccountPubkey.publicKey
 
   await sendAndConfirmTransaction(connection, createAccountTransaction, [
     payer,
@@ -329,6 +328,40 @@ export async function withdraw(): Promise<void> {
 /**
  * Report the number of times the greeted account has been said hello to
  */
+// Flexible class that takes properties and imbues them
+// to the object instance
+class Assignable {
+  constructor(properties) {
+    Object.keys(properties).map((key) => {
+      return (this[key] = properties[key]);
+    });
+  }
+}
+
+export class AccoundData extends Assignable {}
+
+const dataSchema = new Map([
+  [
+    AccoundData,
+    {
+      kind: "struct",
+      fields: [
+        ["initialized", "u8"],
+        ["tree_length", "u32"],
+        ["map", { kind: "map", key: "string", value: "string" }],
+      ],
+    },
+  ],
+]);
+
+export async function getAccountData(
+): Promise<Result<AccoundData, Error>> {
+  let nameAccount = await connection.getAccountInfo(
+      contractPubkey,
+      'processed'
+  );
+  return Ok(deserializeUnchecked(dataSchema, AccoundData, nameAccount.data))
+}
 export async function reportGreetings(): Promise<void> {
   const accountInfo = await connection.getAccountInfo(greetedPubkey);
   if (accountInfo === null) {

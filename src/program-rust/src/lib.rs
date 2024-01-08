@@ -123,10 +123,8 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     let mut account_state = ProgramAccountState::unpack_unchecked(&account_data)?;
 
     if account_state.is_initialized() {
-        msg!("AlreadyInitializedState");
     } else {
-        msg!("InitializedState");
-        //account_state.set_initialized();
+        account_state.set_initialized();
     }
 
     // Finally, we store back to the accounts space

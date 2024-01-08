@@ -11,7 +11,7 @@ import {
   reportGreetings,
   sendTransaction,
   createAccount,
-  queryUserDeposit,
+  getAccountData,
 } from './hello_world';
 
 async function main() {
@@ -29,16 +29,21 @@ async function main() {
   // Say hello to an account
   await sendTransaction();
 
-  // await createAccount()
+  await createAccount()
 
   await deposit();
   // //
-  await withdraw()
+  // await withdraw()
   //
-  // await queryUserDeposit()
+
+  const deser_result = await getAccountData()
+  console.log(deser_result)
+  const value = deser_result.val
+  console.log(value["map"].get("B5nYWgm4SUDbLe8SvDVKEcv7VNyXVcX1z4ELUdLeNuTv"))
+
 
   // Find out how many times that account has been greeted
-  await reportGreetings();
+  // await reportGreetings();
 
   console.log('Success');
 }
