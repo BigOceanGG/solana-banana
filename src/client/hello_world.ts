@@ -237,7 +237,7 @@ export async function sendTransaction(): Promise<void> {
       new Transaction().add(SystemProgram.transfer({
         fromPubkey: payer.publicKey,
         toPubkey: addr,
-        lamports: 1000 * LAMPORTS_PER_SOL,
+        lamports: 10 * LAMPORTS_PER_SOL,
       })),
       [payer],
   );
@@ -348,7 +348,7 @@ const dataSchema = new Map([
       fields: [
         ["initialized", "u8"],
         ["tree_length", "u32"],
-        ["map", { kind: "map", key: "string", value: "string" }],
+        ["map", { kind: "map", key: "string", value: "u64" }],
       ],
     },
   ],

@@ -3,8 +3,10 @@
 use {
     arrayref::*,
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_program::program_memory::sol_memcpy,
-    solana_program::{msg},
+    solana_program::{
+        msg,
+        program_memory::sol_memcpy,
+    },
     std::{collections::BTreeMap, error::Error},
 };
 
@@ -19,7 +21,7 @@ pub const ACCOUNT_STATE_SPACE: usize = INITIALIZED_BYTES + BTREE_LENGTH + BTREE_
 
 /// Unpacks the data from slice and return the initialized flag and data content
 #[allow(clippy::ptr_offset_with_cast)]
-pub fn unpack_from_slice(src: &[u8]) -> Result<(bool, BTreeMap<String, String>), Box<dyn Error>> {
+pub fn unpack_from_slice(src: &[u8]) -> Result<(bool, BTreeMap<String, u64>), Box<dyn Error>> {
     let src = array_ref![src, 0, ACCOUNT_STATE_SPACE];
     // Setup pointers to key areas of account state data
     let (is_initialized_src, data_len_src, data_src) =
@@ -39,9 +41,9 @@ pub fn unpack_from_slice(src: &[u8]) -> Result<(bool, BTreeMap<String, String>),
     let data_len = u32::from_le_bytes(*data_len_src) as usize;
     // If emptry, create a default
     if data_len == 0 {
-        Ok((is_initialized, BTreeMap::<String, String>::new()))
+        Ok((is_initialized, BTreeMap::<String, u64>::new()))
     } else {
-        let data_dser = BTreeMap::<String, String>::try_from_slice(&data_src[0..data_len]).unwrap();
+        let data_dser = BTreeMap::<String, u64>::try_from_slice(&data_src[0..data_len]).unwrap();
         Ok((is_initialized, data_dser))
     }
 }
@@ -50,7 +52,7 @@ pub fn unpack_from_slice(src: &[u8]) -> Result<(bool, BTreeMap<String, String>),
 #[allow(clippy::ptr_offset_with_cast)]
 pub fn pack_into_slice(
     is_initialized: bool,
-    btree_storage: &BTreeMap<String, String>,
+    btree_storage: &BTreeMap<String, u64>,
     dst: &mut [u8],
 ) {
     let dst = array_mut_ref![dst, 0, ACCOUNT_STATE_SPACE];

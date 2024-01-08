@@ -7,7 +7,6 @@ use solana_program::{
     entrypoint::ProgramResult,
     msg,
     pubkey::Pubkey,
-    declare_id,
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack},
     system_instruction,
@@ -15,7 +14,7 @@ use solana_program::{
 };
 use std::collections::HashMap;
 use crate::{
-    account_state::ProgramAccountState, error::SampleError,
+    account_state::ProgramAccountState,
 };
 
 #[derive(Debug)]
@@ -147,7 +146,7 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     } else {
         account_state.set_initialized();
     }
-    account_state.add(depositor_account.key.to_string(), amount.to_string())?;
+    account_state.add(depositor_account.key.to_string(), amount)?;
     ProgramAccountState::pack(account_state, &mut account_data)?;
 
     Ok(())
