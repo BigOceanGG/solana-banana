@@ -23,6 +23,7 @@
     "pretty": "prettier --write '{,src/**/}*.ts'"
   },
   "dependencies": {
+    "@solana/spl-token": "^0.3.10",
     "@solana/web3.js": "^1.33.0",
     "borsh": "^0.7.0",
     "mz": "^2.7.0",
@@ -44,6 +45,7 @@
     "prettier": "^2.1.2",
     "start-server-and-test": "^1.11.6",
     "ts-node": "^10.0.0",
+    "ts-results": "^3.3.0",
     "typescript": "^4.0.5"
   },
   "engines": {
