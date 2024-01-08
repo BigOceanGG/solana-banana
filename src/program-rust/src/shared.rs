@@ -4,6 +4,7 @@ use {
     arrayref::*,
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::program_memory::sol_memcpy,
+    solana_program::{msg},
     std::{collections::BTreeMap, error::Error},
 };
 
@@ -12,7 +13,7 @@ pub const INITIALIZED_BYTES: usize = 1;
 /// Storage for the serialized size of the BTreeMap control
 pub const BTREE_LENGTH: usize = 4;
 /// Storage for the serialized BTreeMap container
-pub const BTREE_STORAGE: usize = 1019;
+pub const BTREE_STORAGE: usize = 200;
 /// Sum of all account state lengths
 pub const ACCOUNT_STATE_SPACE: usize = INITIALIZED_BYTES + BTREE_LENGTH + BTREE_STORAGE;
 
@@ -61,6 +62,7 @@ pub fn pack_into_slice(
     // Store the core data length and serialized content
     let keyval_store_data = btree_storage.try_to_vec().unwrap();
     let data_len = keyval_store_data.len();
+    msg!("length {}", data_len);
     if data_len < BTREE_STORAGE {
         data_len_dst[..].copy_from_slice(&(data_len as u32).to_le_bytes());
         sol_memcpy(data_dst, &keyval_store_data, data_len);

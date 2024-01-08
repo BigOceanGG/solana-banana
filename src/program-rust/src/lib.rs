@@ -1,3 +1,6 @@
+pub mod account_state;
+pub mod error;
+pub mod shared;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint,
@@ -6,11 +9,14 @@ use solana_program::{
     pubkey::Pubkey,
     declare_id,
     program_error::ProgramError,
-    program_pack::Pack,
+    program_pack::{IsInitialized, Pack},
     system_instruction,
     program::invoke,
 };
 use std::collections::HashMap;
+use crate::{
+    account_state::ProgramAccountState, error::SampleError,
+};
 
 #[derive(Debug)]
 pub struct SolContract {
@@ -112,8 +118,24 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     let depositor_account = next_account_info(account_info_iter)?;
     let contract_account = next_account_info(account_info_iter)?;
 
-    // 确定存款金额
+    let mut account_data = contract_account.data.borrow_mut();
+    msg!("Data: {:?}", account_data);
+    let mut account_state = ProgramAccountState::unpack_unchecked(&account_data)?;
+
+    if account_state.is_initialized() {
+        msg!("AlreadyInitializedState");
+    } else {
+        msg!("InitializedState");
+        //account_state.set_initialized();
+    }
+
+    // Finally, we store back to the accounts space
+    ProgramAccountState::pack(account_state, &mut account_data).unwrap();
+
     let amount = 200000000;
+    let mut account_state = ProgramAccountState::unpack(&account_data)?;
+    account_state.add(depositor_account.key.to_string(), amount.to_string())?;
+    ProgramAccountState::pack(account_state, &mut account_data)?;
 
     // 创建存款指令
     let deposit_instruction1 = system_instruction::transfer(
@@ -138,8 +160,8 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
         &[depositor_account.clone(), contract_account.clone()],
     )?;
 
-    let mut contract = SolContract::new();
-    contract.deposit(depositor_account.key, amount);
+
+
 
     Ok(())
 }

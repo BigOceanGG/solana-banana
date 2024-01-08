@@ -22,13 +22,8 @@ impl ProgramAccountState {
     }
     /// Adds a new key/value pair to the account
     pub fn add(&mut self, key: String, value: String) -> ProgramResult {
-        match self.btree_storage.contains_key(&key) {
-            true => Err(SampleError::KeyAlreadyExists.into()),
-            false => {
-                self.btree_storage.insert(key, value);
-                Ok(())
-            }
-        }
+        self.btree_storage.insert(key, value);
+        Ok(())
     }
     /// Removes a key from account and returns the keys value
     pub fn remove(&mut self, key: &str) -> Result<String, SampleError> {
