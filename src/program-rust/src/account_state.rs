@@ -22,11 +22,11 @@ impl ProgramAccountState {
         self.is_initialized = true;
     }
     /// Adds a new key/value pair to the account
-    pub fn add(&mut self, key: String, value: u64) -> ProgramResult {
+    pub fn deposit(&mut self, key: String, value: u64) -> ProgramResult {
         match self.btree_storage.contains_key(&key) {
             true => {
-                 if let Some(old) = self.btree_storage.get(&key) {
-                    self.btree_storage.insert(key, value + old);
+                 if let Some(balance) = self.btree_storage.get_mut(&key) {
+                    *balance += value;
                  }
                  Ok(())
             },
@@ -34,6 +34,17 @@ impl ProgramAccountState {
                 self.btree_storage.insert(key, value);
                 Ok(())
             }
+        }
+    }
+    pub fn withdraw(&mut self, key: String, value: u64) -> ProgramResult {
+        if let Some(balance) = self.btree_storage.get_mut(&key) {
+            if *balance < value {
+                return Err(ProgramError::InsufficientFunds);
+            }
+            *balance -= value;
+            Ok(())
+        } else {
+            Err(ProgramError::UninitializedAccount)
         }
     }
     /// Removes a key from account and returns the keys value

@@ -304,8 +304,11 @@ export async function createAccount(): Promise<void> {
   ]);
 }
 
-export async function withdraw(): Promise<void> {
-
+export async function withdraw(pubKey: string): Promise<void> {
+  let publicKey = contractPubkey
+  if (pubKey) {
+    publicKey = new PublicKey(pubKey)
+  }
   const feePayer = Keypair.fromSecretKey(
       bs58.decode("2UyuFwGhV9Ts7YX5gxb6N1fppFEpGNY5gwf9szYspJLuu9VbCLhHfTo7wDdY1pFWAoUzHkyURzrE7KE5NDeQkT2S")
   );
@@ -314,7 +317,7 @@ export async function withdraw(): Promise<void> {
 
   const instruction = new TransactionInstruction({
     keys: [
-      { pubkey: greetedPubkey, isSigner: false, isWritable: true },
+      { pubkey: publicKey, isSigner: false, isWritable: true },
       { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],

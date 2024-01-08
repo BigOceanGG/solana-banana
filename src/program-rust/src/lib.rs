@@ -146,7 +146,7 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     } else {
         account_state.set_initialized();
     }
-    account_state.add(depositor_account.key.to_string(), amount)?;
+    account_state.deposit(depositor_account.key.to_string(), amount)?;
     ProgramAccountState::pack(account_state, &mut account_data)?;
 
     Ok(())
@@ -161,12 +161,21 @@ fn withdraw(accounts: &[AccountInfo]) -> ProgramResult {
     let amount = 100000000;
 
     if contract_account.lamports() < amount {
-        msg!("Insufficient balance.");
+        msg!("Insufficient balance. {}", contract_account.lamports());
         return Err(ProgramError::InsufficientFunds);
     }
     **contract_account.lamports.borrow_mut() -= amount;
     **withdrawer_account.lamports.borrow_mut() += amount/2;
     **withdrawer_account.lamports.borrow_mut() += amount/2;
+
+    let mut account_data = contract_account.data.borrow_mut();
+    let mut account_state = ProgramAccountState::unpack_unchecked(&account_data)?;
+    if account_state.is_initialized() {
+    } else {
+        account_state.set_initialized();
+    }
+    account_state.withdraw(withdrawer_account.key.to_string(), amount)?;
+    ProgramAccountState::pack(account_state, &mut account_data)?;
 
     Ok(())
 }

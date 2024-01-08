@@ -37,9 +37,9 @@ async function main() {
   }
   await deposit(pubKey);
   // //
-  // await withdraw()
-  //
 
+  await withdraw(pubKey)
+  //
   const deser_result = await getAccountData(pubKey)
   console.log(deser_result)
   const value = deser_result.val
