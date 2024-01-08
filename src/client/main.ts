@@ -27,16 +27,20 @@ async function main() {
   await checkProgram();
 
   // Say hello to an account
-  await sendTransaction();
+  // await sendTransaction();
+  //
 
-  await createAccount()
-
-  await deposit();
+  //
+  let pubKey = "EHET2ziinNPQRgZe2kCgqkBQgH5x8kamirdWpcxFFbwe"
+  if(!pubKey) {
+    await createAccount()
+  }
+  await deposit(pubKey);
   // //
   // await withdraw()
   //
 
-  const deser_result = await getAccountData()
+  const deser_result = await getAccountData(pubKey)
   console.log(deser_result)
   const value = deser_result.val
   const data = value["map"].get("FCSKqqjPcNRQE4QRVLrJASmhg95QMPKmD1BpcaWJvg1G")

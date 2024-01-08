@@ -2,6 +2,7 @@
 use crate::error::SampleError;
 use crate::shared::ACCOUNT_STATE_SPACE;
 use solana_program::{
+    msg,
     entrypoint::ProgramResult,
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
@@ -22,11 +23,21 @@ impl ProgramAccountState {
     }
     /// Adds a new key/value pair to the account
     pub fn add(&mut self, key: String, value: u64) -> ProgramResult {
-        self.btree_storage.insert(key, value);
-        Ok(())
+        match self.btree_storage.contains_key(&key) {
+            true => {
+                 if let Some(old) = self.btree_storage.get(&key) {
+                    self.btree_storage.insert(key, value + old);
+                 }
+                 Ok(())
+            },
+            false => {
+                self.btree_storage.insert(key, value);
+                Ok(())
+            }
+        }
     }
     /// Removes a key from account and returns the keys value
-    pub fn remove(&mut self, key: &String) -> Result<u64, SampleError> {
+    pub fn remove(&mut self, key: &str) -> Result<u64, SampleError> {
         match self.btree_storage.contains_key(key) {
             true => Ok(self.btree_storage.remove(key).unwrap()),
             false => Err(SampleError::KeyNotFoundInAccount),

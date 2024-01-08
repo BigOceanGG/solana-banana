@@ -245,8 +245,11 @@ export async function sendTransaction(): Promise<void> {
 /**
  * Say hello
  */
-export async function deposit(): Promise<void> {
-
+export async function deposit(pubKey: string): Promise<void> {
+  let publicKey = contractPubkey
+  if (pubKey) {
+    publicKey = new PublicKey(pubKey)
+  }
 
   const feePayer = Keypair.fromSecretKey(
       bs58.decode("2UyuFwGhV9Ts7YX5gxb6N1fppFEpGNY5gwf9szYspJLuu9VbCLhHfTo7wDdY1pFWAoUzHkyURzrE7KE5NDeQkT2S")
@@ -258,7 +261,7 @@ export async function deposit(): Promise<void> {
   const instruction = new TransactionInstruction({
     keys: [
       { pubkey: feePayer.publicKey, isSigner: true, isWritable: true },
-      { pubkey: contractPubkey, isSigner: false, isWritable: true },
+      { pubkey: publicKey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     programId: programId,
@@ -293,6 +296,7 @@ export async function createAccount(): Promise<void> {
   );
 
   contractPubkey = newAccountPubkey.publicKey
+  console.log("contractPubkey: ", contractPubkey.toBase58())
 
   await sendAndConfirmTransaction(connection, createAccountTransaction, [
     payer,
@@ -354,10 +358,14 @@ const dataSchema = new Map([
   ],
 ]);
 
-export async function getAccountData(
+export async function getAccountData(pubKey: string
 ): Promise<Result<AccoundData, Error>> {
+  let publicKey = contractPubkey
+  if (pubKey) {
+    publicKey = new PublicKey(pubKey)
+  }
   let nameAccount = await connection.getAccountInfo(
-      contractPubkey,
+      publicKey,
       'processed'
   );
   return Ok(deserializeUnchecked(dataSchema, AccoundData, nameAccount.data))
