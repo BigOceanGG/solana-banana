@@ -118,30 +118,13 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     let depositor_account = next_account_info(account_info_iter)?;
     let contract_account = next_account_info(account_info_iter)?;
 
-    let mut account_data = contract_account.data.borrow_mut();
-    msg!("Data: {:?}", account_data);
-    let mut account_state = ProgramAccountState::unpack_unchecked(&account_data)?;
-
-    if account_state.is_initialized() {
-    } else {
-        account_state.set_initialized();
-    }
-
-    // Finally, we store back to the accounts space
-    ProgramAccountState::pack(account_state, &mut account_data).unwrap();
 
     let amount = 200000000;
-    let mut account_state = ProgramAccountState::unpack(&account_data)?;
-    account_state.add(depositor_account.key.to_string(), amount.to_string())?;
-    ProgramAccountState::pack(account_state, &mut account_data)?;
-
-    // 创建存款指令
     let deposit_instruction1 = system_instruction::transfer(
         &depositor_account.key,
         &contract_account.key,
         amount/2,
     );
-
     invoke(
         &deposit_instruction1,
         &[depositor_account.clone(), contract_account.clone()],
@@ -158,8 +141,14 @@ fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
         &[depositor_account.clone(), contract_account.clone()],
     )?;
 
-
-
+    let mut account_data = contract_account.data.borrow_mut();
+    let mut account_state = ProgramAccountState::unpack_unchecked(&account_data)?;
+    if account_state.is_initialized() {
+    } else {
+        account_state.set_initialized();
+    }
+    account_state.add(depositor_account.key.to_string(), amount.to_string())?;
+    ProgramAccountState::pack(account_state, &mut account_data)?;
 
     Ok(())
 }

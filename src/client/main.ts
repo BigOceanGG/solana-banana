@@ -39,7 +39,7 @@ async function main() {
   const deser_result = await getAccountData()
   console.log(deser_result)
   const value = deser_result.val
-  console.log(value["map"].get("B5nYWgm4SUDbLe8SvDVKEcv7VNyXVcX1z4ELUdLeNuTv"))
+  console.log(value["map"].get("FCSKqqjPcNRQE4QRVLrJASmhg95QMPKmD1BpcaWJvg1G"))
 
 
   // Find out how many times that account has been greeted
