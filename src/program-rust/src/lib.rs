@@ -33,19 +33,9 @@ fn process_instruction(
     match instruction_data[0] {
         0 => deposit(accounts),
         1 => withdraw(accounts),
-        2 => getUserBalance(accounts),
         _ => Err(ProgramError::InvalidInstructionData),
     }
 }
-
-fn getUserBalance(accounts: &[AccountInfo]) -> ProgramResult {
-    let account_info_iter = &mut accounts.iter();
-    let account = next_account_info(account_info_iter)?;
-    let mut contract = SolContract::new();
-    contract.get_balance(account.key);
-    Ok(())
-}
-
 
 fn deposit(accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
